@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  go-judge:
+    build:
+      context: .
+      dockerfile: Dockerfile.judge
+    privileged: true
+    ports:
+      - "5050:5050"
+    restart: always
