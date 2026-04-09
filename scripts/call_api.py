@@ -32,7 +32,7 @@ try:
     # 携带 API Key 注入请求头
     headers = {"X-API-Key": API_KEY}
     
-    r = requests.post(API_URL, json=payload, headers=headers, timeout=180) 
+    r = requests.post(API_URL, json=payload, headers=headers, timeout=300) 
     
     if r.status_code == 200:
         print("✅ 云端数据生成完毕，正在下载基础包...")
