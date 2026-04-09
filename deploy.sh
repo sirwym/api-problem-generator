@@ -52,6 +52,9 @@ echo "⚙️ 5. 配置 FastAPI 生产级守护进程 (Systemd)..."
 SERVICE_NAME="cloud-judge-api"
 SERVICE_PATH="/etc/systemd/system/${SERVICE_NAME}.service"
 
+GENERATED_API_KEY=$(openssl rand -hex 16)
+echo "   🔑 为本服务器自动生成了安全的 API Key: $GENERATED_API_KEY"
+
 # 动态生成 Systemd 配置文件
 sudo bash -c "cat > $SERVICE_PATH" <<EOF
 [Unit]
@@ -63,6 +66,7 @@ Requires=docker.service
 User=$CURRENT_USER
 WorkingDirectory=$CURRENT_DIR/backend
 Environment="PATH=$CURRENT_DIR/backend/venv/bin"
+Environment="API_KEY=$GENERATED_API_KEY"  
 # 生产环境去掉了 --reload，提升性能
 ExecStart=$CURRENT_DIR/backend/venv/bin/uvicorn main:app --host 0.0.0.0 --port 8000
 Restart=always
@@ -78,13 +82,11 @@ sudo systemctl enable $SERVICE_NAME
 sudo systemctl restart $SERVICE_NAME
 echo "   ✅ FastAPI 守护进程配置并启动完毕"
 
+# 最后在脚本结尾处，把生成的 Key 打印给用户保存：
 echo "=================================================="
 echo "🎉 部署彻底完成！系统已上线！"
 echo "=================================================="
 echo "🌐 API 访问地址: http://<你的服务器IP>:8000/api/forge_problem"
-echo ""
-echo "🛠️ 日常运维命令:"
-echo "  - 查看运行状态: sudo systemctl status $SERVICE_NAME"
-echo "  - 查看实时日志: sudo journalctl -u $SERVICE_NAME -f"
-echo "  - 重启 API 服务: sudo systemctl restart $SERVICE_NAME"
+echo "🔑 您的 API Key: $GENERATED_API_KEY"
+echo "⚠️ (请务必妥善保存上方 Key，本地客户端调用时需将其作为参数传入)"
 echo "=================================================="

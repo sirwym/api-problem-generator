@@ -2,6 +2,8 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from starlette.background import BackgroundTask
 from pydantic import BaseModel
+from fastapi import FastAPI, HTTPException, Security, Depends
+from fastapi.security.api_key import APIKeyHeader
 import requests
 import tempfile
 import os
@@ -13,6 +15,18 @@ import threading
 app = FastAPI()
 # 定义全局并发锁，最多允许 4 个任务同时进行
 task_limiter = threading.Semaphore(4)
+
+# 定义 API Key 名称
+API_KEY_NAME = "X-API-Key"
+# 从环境变量读取服务器密钥，如果没有配置，则默认拒绝（防止忘记配置导致裸奔）
+SERVER_API_KEY = os.getenv("API_KEY", "UNCONFIGURED_KEY") 
+api_key_header = APIKeyHeader(name=API_KEY_NAME, auto_error=True)
+
+async def verify_api_key(api_key: str = Security(api_key_header)):
+    if api_key != SERVER_API_KEY or SERVER_API_KEY == "UNCONFIGURED_KEY":
+        raise HTTPException(status_code=401, detail="🚫 无效的 API Key 或服务器未配置密钥")
+    return api_key
+
 
 GO_JUDGE_URL = os.getenv("GO_JUDGE_URL", "http://localhost:5050/run")
 
@@ -71,7 +85,7 @@ def call_judge_compile(src_code: str, output_name: str, testlib_code: str):
 
 
 @app.post("/api/forge_problem")
-def forge_problem(req: ProblemRequest):
+def forge_problem(req: ProblemRequest, api_key: str = Depends(verify_api_key)):
     # 使用信号量进行排队控制
     with task_limiter:
         print("分配到资源！开始执行云端出题...")

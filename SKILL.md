@@ -56,9 +56,11 @@ trigger: "@api-problem-generator"
 ```
 
 **Step 4: 触发云端出题引擎 (Cloud Forge)**
-- **【严禁覆写铁律】**：绝对不允许生成、修改或覆盖工作区中已有的 `call_api.py` 脚本！它是本地固化的流水线程序。
-- **执行命令**：当所有文件（`problem_temp/`、`meta.json`、`test_payload.json`）全部落地后，请直接在终端执行命令：`python3 call_api.py` 来触发云端引擎。
+- **【严禁覆写铁律】**：绝对不允许生成、修改或覆盖工作区中已有的 `scripts/call_api.py` 脚本！它是本地固化的流水线程序。
+- **【获取凭证】**：在执行调用之前，你需要明确知道云端 API 的 URL 和访问 Key。你可以从工具的全局环境变量、用户提供给你的上下文文件中获取。如果你不知道这两个参数，请立刻暂停，并向用户询问：“请提供出题 API 的 URL 和 Key 以便我触发生成。”
+- **【执行命令】**：当所有文件落地且你拿到了参数后，请在终端执行以下带参数的命令来触发云端引擎：
+  `python3 scripts/call_api.py --url "<你的API地址>" --key "<你的API密钥>"`
 
 **Step 5: 验证与清理**
 - 观察终端输出，如果成功生成了形如 `problem_package_时间戳.zip` 的压缩包，向用户汇报出题成功，并展示数据包和标签摘要。
-- 确认无误后，你可以通过 Shell 命令清理过程产生的垃圾文件：`rm -rf problem_temp test_payload.json meta.json` (注意：绝对不要删除 .zip 和 call_api.py)。
+- 确认无误后，你可以通过 Shell 命令清理过程产生的垃圾文件：`rm -rf problem_temp test_payload.json meta.json` (注意：绝对不要删除 .zip 和 scripts/call_api.py)。
